@@ -1,4 +1,14 @@
+import 'dart:io';
+
+import 'package:FlashSigns/database_helper.dart';
+import 'package:connectivity/connectivity.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:path/path.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:swipedetector/swipedetector.dart';
+import 'package:video_player/video_player.dart';
 
 void main() => runApp(MyApp());
 
@@ -20,92 +30,168 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      //home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: VideoPlayerScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class VideoPlayerScreen extends StatefulWidget {
+  VideoPlayerScreen({Key key}) : super(key: key);
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _VideoPlayerScreenState createState() => _VideoPlayerScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
+  final _dbHelper = DatabaseHelper.instance;
+  var _activeId = 0;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  Future<VideoPlayerController> _initVideoFuture;
+  VideoPlayerController _controller;
+  Future<List<Sign>> _signsFuture;
+
+  @override
+  void initState() {
+    _signsFuture = _dbHelper.queryAllSigns();
+    _initVideoFuture = _initVideo();
+
+    super.initState();
+  }
+
+  Future<VideoPlayerController> _initVideo() async {
+    final signs = await _signsFuture;
+    final activeSign = signs.elementAt(_activeId % signs.length);
+
+    await PermissionHandler().requestPermissions([PermissionGroup.storage]);
+    final videoFilename = activeSign.id.toString() + ".mp4";
+    final videoDir = "/mnt/sdcard/Download";
+    final videoFile = File(join(videoDir, videoFilename));
+    final doesExist = await videoFile.exists();
+
+    if (!doesExist) {
+      final connectivityStatus = await Connectivity().checkConnectivity();
+
+      if (connectivityStatus != ConnectivityResult.wifi) {
+        print("sparta: not connected over WiFi!");
+      } else {
+        print("sparta: connected over WiFi!");
+
+        await FlutterDownloader.initialize();
+        await FlutterDownloader.enqueue(
+          fileName: videoFilename,
+          url: activeSign.url,
+          savedDir: videoDir,
+          showNotification: true,
+          openFileFromNotification: false,
+          );
+      }
+    } else {
+      print("sparta: it does exist already");
+    }
+
+    var controller = VideoPlayerController.file(videoFile);
+    await controller.initialize();
+    controller.setLooping(true);
+
+    // Dispose previous controller and save new one
+    if (_controller != null) _controller.dispose();
+    _controller = controller;
+
+    return controller;
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+
+    super.dispose();
+  }
+
+  FutureBuilder _createVideoFuture() {
+    return FutureBuilder<VideoPlayerController>(
+      future: _initVideoFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          return Expanded(child: Container(child: Center(child: AspectRatio(
+            aspectRatio: snapshot.data.value.aspectRatio,
+            child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    if (snapshot.data.value.isPlaying) {
+                      snapshot.data.pause();
+                    } else {
+                      snapshot.data.play();
+                    }
+                  });
+                },
+                child: VideoPlayer(snapshot.data)),
+          ))));
+        } else {
+          return Expanded(child: Center(child: CircularProgressIndicator()));
+        }
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: Text('FlashSigns'),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
+      body: Container(
+        child: Column(children: [
+          _createVideoFuture(),
+          Expanded(child: Column(children: [
+            Row(
+              children: [
+                Expanded(child: IconButton(
+                  icon: Icon(Icons.highlight_off),
+                  iconSize: 96,
+                  color: Colors.red[700],
+                  tooltip: "Answer was wrong",
+                  onPressed: () {
+                    setState(() {
+                      _activeId--;
+                      _initVideoFuture = _initVideo();
+                    });
+                  },
+                )),
+                Expanded(child: IconButton(
+                  icon: Icon(Icons.check_circle_outline),
+                  iconSize: 96,
+                  color: Colors.green[700],
+                  tooltip: "Answer was correct",
+                  onPressed: () {
+                    setState(() {
+                      _activeId++;
+                      _initVideoFuture = _initVideo();
+                    });
+                  },
+                )),
+              ],
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.display1,
+            FutureBuilder(
+                future: _signsFuture,
+                builder: (context, AsyncSnapshot<List<Sign>> snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    return
+                      Expanded(child: Center(child: Text(
+                        snapshot.data
+                            .elementAt(_activeId % snapshot.data.length)
+                            .description,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 30),
+                      )));
+                  } else {
+                    return Center(child: CircularProgressIndicator());
+                  }
+                }
             ),
-          ],
-        ),
+          ]))
+        ]),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
