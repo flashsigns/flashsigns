@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:video_player/video_player.dart';
 
@@ -64,8 +65,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
 
     await PermissionHandler().requestPermissions([PermissionGroup.storage]);
     final videoFilename = activeSign.id.toString() + ".mp4";
-    final videoDir = "/mnt/sdcard/Download";
-    final videoFile = File(join(videoDir, videoFilename));
+    final videoDir = await getApplicationDocumentsDirectory();
+    final videoFile = File(join(videoDir.path, videoFilename));
     final doesExist = await videoFile.exists();
 
     if (!doesExist) {
@@ -80,7 +81,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         await FlutterDownloader.enqueue(
           fileName: videoFilename,
           url: activeSign.url,
-          savedDir: videoDir,
+          savedDir: videoDir.path,
           showNotification: true,
           openFileFromNotification: false,
           );
