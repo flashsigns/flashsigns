@@ -69,14 +69,14 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     final videoFile = File(join(videoDir.path, videoFilename));
     final doesExist = await videoFile.exists();
 
+    var controller;
+
     if (!doesExist) {
       final connectivityStatus = await Connectivity().checkConnectivity();
 
       if (connectivityStatus != ConnectivityResult.wifi) {
-        print("sparta: not connected over WiFi!");
+        throw("A WiFi connection is required!");
       } else {
-        print("sparta: connected over WiFi!");
-
         await FlutterDownloader.initialize();
         await FlutterDownloader.enqueue(
           fileName: videoFilename,
@@ -86,11 +86,12 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
           openFileFromNotification: false,
           );
       }
+
+      controller = VideoPlayerController.network(activeSign.url);
     } else {
-      print("sparta: it does exist already");
+      controller = VideoPlayerController.file(videoFile);
     }
 
-    var controller = VideoPlayerController.file(videoFile);
     await controller.initialize();
     controller.setLooping(true);
 
@@ -112,21 +113,30 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     return FutureBuilder<VideoPlayerController>(
       future: _initVideoFuture,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          return Expanded(child: Container(child: Center(child: AspectRatio(
-            aspectRatio: snapshot.data.value.aspectRatio,
-            child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    if (snapshot.data.value.isPlaying) {
-                      snapshot.data.pause();
-                    } else {
-                      snapshot.data.play();
-                    }
-                  });
-                },
-                child: VideoPlayer(snapshot.data)),
-          ))));
+        if (snapshot.hasError) {
+          return Container(
+            child: Icon(
+              Icons.signal_wifi_off,
+              size: 96,
+              color: Colors.grey[300],
+            ),
+            height: MediaQuery.of(context).size.height * 0.45,
+          );
+        } else if (snapshot.connectionState == ConnectionState.done) {
+            return Expanded(child: Container(child: Center(child: AspectRatio(
+              aspectRatio: snapshot.data.value.aspectRatio,
+              child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      if (snapshot.data.value.isPlaying) {
+                        snapshot.data.pause();
+                      } else {
+                        snapshot.data.play();
+                      }
+                    });
+                  },
+                  child: VideoPlayer(snapshot.data)),
+            ))));
         } else {
           return Expanded(child: Center(child: CircularProgressIndicator()));
         }
