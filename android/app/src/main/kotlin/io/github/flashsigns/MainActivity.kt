@@ -1,4 +1,4 @@
-package com.example.flashsigns
+package io.github.flashsigns
 
 import android.os.Bundle
 
