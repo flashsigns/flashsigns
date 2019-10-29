@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:swipedetector/swipedetector.dart';
 import 'package:video_player/video_player.dart';
 
 void main() => runApp(MyApp());
