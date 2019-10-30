@@ -56,6 +56,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     _signsFuture = _dbHelper.queryAllSigns();
     _initVideoFuture = _initVideo();
 
+    FlutterDownloader.initialize();
+
     super.initState();
   }
 
@@ -77,12 +79,11 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       if (connectivityStatus != ConnectivityResult.wifi) {
         throw("A WiFi connection is required!");
       } else {
-        await FlutterDownloader.initialize();
         await FlutterDownloader.enqueue(
           fileName: videoFilename,
           url: activeSign.url,
           savedDir: videoDir.path,
-          showNotification: true,
+          showNotification: false,
           openFileFromNotification: false,
           );
       }
