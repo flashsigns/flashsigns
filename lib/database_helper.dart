@@ -89,7 +89,29 @@ class DatabaseHelper {
       ("Après-midi", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/A4D87B9B-9737-8EFC-95CF06657BCCA23C.mp4"),
       ("Bientôt", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/18A6BA55-AC61-0210-72E43E79EC5F9E5B.mp4"),
       ("Ce matin", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/F38F1699-C946-D054-3FC6FBB8480B3890.mp4"),
-      ("Ce soir", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/F3D2CF32-95F8-E38B-B24AC1CA20C0A361.mp4")
+      ("Ce soir", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/F3D2CF32-95F8-E38B-B24AC1CA20C0A361.mp4"),
+      ("Ce n'est pas grave", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/2B4ECEEE-C005-1A68-5E06B072D020CC39.mp4"),
+      ("C'est la vie", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/261E2F46-A8C7-0286-7C658CD037B54647.mp4"),
+      ("Pas d'accord", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/D5E96F2D-B48C-3429-CDEF254301E4C1B0.mp4"),
+      ("Pas compris", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/701F45B1-A8D1-F1F0-601453BF79111765.mp4"),
+      ("Pas fini", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/43C902A8-5056-0100-46BC20AAD4E8D7B5.mp4"),
+      ("Avoir de la chance", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/D8B2D6BD-D6CC-6F54-9F2873033B7B3B29.mp4"),
+      ("Dommage", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/9E212184-C588-B1E0-7D5E82D43A984609.mp4"),
+      ("Discuter", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/9FDC7F9D-D8EB-F3CA-39F26D1EFE99BFE5.mp4"),
+      ("S'exprimer", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/11A0580C-0806-B95F-EC90E32AE15C4672.mp4"),
+      ("Dire", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/83E97DF5-DE51-1DC6-3EE83D58FEA25F72.mp4"),
+      ("Communiquer", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/AC3C5F9D-F083-A2C8-0AF9F56EFEBBA31C.mp4"),
+      ("Expliquer", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/CDB7E4BE-BE4C-EE2A-C38C69F07027EFCC.mp4"),
+      ("Raconter", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/C87463C0-E2C8-156D-42676D6903AFDCEA.mp4"),
+      ("Facile", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/C854C096-0C1D-0E67-D6A9BFA7B4F2640C.mp4"),
+      ("Difficile", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/8796BBEA-BC42-337F-85932EFEC278A655.mp4"),
+      ("Compliqué", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/46906502-5056-0100-461238B5BBB07452.mp4"),
+      ("Triste", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/D59D2B40-A9C4-F056-1B3F1898F68379D0.mp4"),
+      ("Apprendre", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/0618A720-07C4-5F76-EB56289212D916AC.mp4"),
+      ("Fatigué", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/83CDFC6C-D746-8AD1-8804C73B2DD55344.mp4"),
+      ("Signer", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/CA49FC2D-BF8D-24E6-BD078B0886A7BBD0.mp4"),
+      ("Boire", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/C598A46C-AA9F-68C6-EC1FC7CF45488B25.mp4"),
+      ("Manger", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/BE3B0FF2-BA9B-3159-57ED78193BC155D0.mp4")
     ''');
   }
 
