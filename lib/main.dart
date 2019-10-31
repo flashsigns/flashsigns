@@ -65,7 +65,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     final signs = await _signsFuture;
     final activeSign = signs.elementAt(_activeId % signs.length);
 
-    await PermissionHandler().requestPermissions([PermissionGroup.storage]);
     final videoFilename = activeSign.id.toString() + ".mp4";
     final videoDir = await getApplicationDocumentsDirectory();
     final videoFile = File(join(videoDir.path, videoFilename));
