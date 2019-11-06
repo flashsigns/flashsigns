@@ -1,13 +1,12 @@
 import 'dart:io';
 
-import 'package:FlashSigns/database_helper.dart';
+import 'package:flashsigns/database_helper.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:video_player/video_player.dart';
 
 void main() => runApp(MyApp());
