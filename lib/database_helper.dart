@@ -69,11 +69,18 @@ class DatabaseHelper {
       )
     ''');
 
+    // Insert the first one manually to start the ID column at 0
+    await db.execute('''
+      INSERT INTO $table
+      ($columnId, $columnDescription, $columnUrl)
+      VALUES
+      (0, "Ne pas pouvoir", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/72243C67-AE37-2F8F-7C0478E143AF4CB2.mp4")
+      ''');
+
     await db.execute('''
       INSERT INTO $table
       ($columnDescription, $columnUrl)
       VALUES
-      ("Ne pas pouvoir", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/72243C67-AE37-2F8F-7C0478E143AF4CB2.mp4"),
       ("Beau - Belle", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/191F5F9D-A76B-8A74-C2884DD5B56863D7.mp4"),
       ("Soir", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/AE8D6914-BAC0-7687-6D9E5A2F05673DA7.mp4"),
       ("Faire quoi", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/051F4E73-D5C6-78B0-E22CBF1682FC68C0.mp4"),
