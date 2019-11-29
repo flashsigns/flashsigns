@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flashsigns/database_helper.dart';
 import 'package:connectivity/connectivity.dart';
@@ -44,7 +45,7 @@ class VideoPlayerScreen extends StatefulWidget {
 
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   final _dbHelper = DatabaseHelper.instance;
-  var _activeId = 0;
+  Sign _activeSign;
 
   Future<VideoPlayerController> _initVideoFuture;
   VideoPlayerController _controller;
@@ -61,10 +62,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   }
 
   Future<VideoPlayerController> _initVideo() async {
-    final signs = await _signsFuture;
-    final activeSign = signs.elementAt(_activeId % signs.length);
+    _activeSign = await chooseNextSign();
 
-    final videoFilename = activeSign.id.toString() + ".mp4";
+    final videoFilename = _activeSign.id.toString() + ".mp4";
     final videoDir = await getApplicationDocumentsDirectory();
     final videoFile = File(join(videoDir.path, videoFilename));
     final doesExist = await videoFile.exists();
@@ -79,14 +79,14 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       } else {
         await FlutterDownloader.enqueue(
           fileName: videoFilename,
-          url: activeSign.url,
+          url: _activeSign.url,
           savedDir: videoDir.path,
           showNotification: false,
           openFileFromNotification: false,
           );
       }
 
-      controller = VideoPlayerController.network(activeSign.url);
+      controller = VideoPlayerController.network(_activeSign.url);
     } else {
       controller = VideoPlayerController.file(videoFile);
     }
@@ -99,6 +99,67 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     _controller = controller;
 
     return controller;
+  }
+
+  Future<Sign> chooseNextSign() async {
+    final signs = await _signsFuture;
+    for (final sign in signs) {
+      print(sign.description.toString() + ", " + sign.id.toString() + ", correct: " + sign.nCorrect.toString() + ", incorrect: " + sign.nIncorrect.toString());
+    }
+
+    var workableSigns = [];
+    var nUnknowns = 0;
+    final maxUnknowns = 5;
+    for (final sign in signs) {
+      if (nUnknowns >= maxUnknowns) {
+        break;
+      }
+
+      workableSigns.add(sign);
+
+      final total = sign.nCorrect + sign.nIncorrect;
+      if (total == 0) {
+        nUnknowns ++;
+        continue;
+      }
+    }
+
+    var coeffs = [];
+    for (Sign sign in workableSigns) {
+      final total = sign.nCorrect + sign.nIncorrect;
+      var coeff = total != 0 ? sign.nIncorrect / total : 1;
+      if (coeff == 1) {
+        coeff = 0.95;
+      } else if (coeff == 0) {
+        coeff = 0.05;
+      }
+      coeffs.add(coeff);
+    }
+
+    // TODO: moving average!
+    // Or just do moving average on the current session (not database)
+    // Average on the last X times, starting with the database value populating
+    // all of them
+    // => so keep a "weight" instead of "nIncorrect" and "nCorrect"
+
+    final sumCoeffs = coeffs.fold(0, (a, b) => a + b);
+    final probs = coeffs.map((coeff) { return coeff / sumCoeffs; });
+    print(sumCoeffs);
+    print(coeffs);
+    print(probs);
+    //signs.map((sign) { return sign; });
+
+    var rng = new Random();
+    final chosenRand = rng.nextDouble();
+    var currentCount = 0.0;
+    for (int i = 0; i < probs.length; i++) {
+      currentCount += probs.elementAt(i);
+      if (currentCount > chosenRand) {
+        return workableSigns.elementAt(i);
+      }
+    }
+
+    //return workableSigns.elementAt(rng.nextInt(workableSigns.length));
   }
 
   @override
@@ -162,7 +223,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                   tooltip: "Answer was wrong",
                   onPressed: () {
                     setState(() {
-                      _activeId--;
+                      _dbHelper.updateIncorrect(_activeSign.id);
+                      _activeSign.nIncorrect++;
                       _initVideoFuture = _initVideo();
                     });
                   },
@@ -174,7 +236,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                   tooltip: "Answer was correct",
                   onPressed: () {
                     setState(() {
-                      _activeId++;
+                      _dbHelper.updateCorrect(_activeSign.id);
+                      _activeSign.nCorrect++;
                       _initVideoFuture = _initVideo();
                     });
                   },
@@ -188,7 +251,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                     return
                       Expanded(child: Center(child: Text(
                         snapshot.data
-                            .elementAt(_activeId % snapshot.data.length)
+                            .elementAt(_activeSign.id)
                             .description,
                         style: TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 30),
