@@ -8,14 +8,18 @@ class Sign {
   final int id;
   final String description;
   final String url;
+  int nCorrect;
+  int nIncorrect;
 
-  Sign({this.id, this.description, this.url});
+  Sign({this.id, this.description, this.url, this.nCorrect, this.nIncorrect});
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'description': description,
       'url': url,
+      'correct': nCorrect,
+      'incorrect': nIncorrect,
     };
   }
 }
@@ -29,6 +33,8 @@ class DatabaseHelper {
   static final columnId = '_id';
   static final columnDescription = 'description';
   static final columnUrl = 'url';
+  static final columnCorrect = 'correct';
+  static final columnIncorrect = 'incorrect';
 
   DatabaseHelper._privateConstructor();
   static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
@@ -55,9 +61,11 @@ class DatabaseHelper {
   Future _onCreate(Database db, int version) async {
     await db.execute('''
       CREATE TABLE $table (
-        $columnId INTEGER PRIMARY KEY,
+        $columnId INTEGER PRIMARY KEY AUTOINCREMENT,
         $columnDescription TEXT NOT NULL,
-        $columnUrl TEXT NOT NULL
+        $columnUrl TEXT NOT NULL,
+        $columnCorrect INTEGER DEFAULT 0,
+        $columnIncorrect INTEGER DEFAULT 0
       )
     ''');
 
@@ -132,7 +140,25 @@ class DatabaseHelper {
         id: rows[i]['$columnId'],
         description: rows[i]['$columnDescription'],
         url: rows[i]['$columnUrl'],
+        nCorrect: rows[i]['$columnCorrect'],
+        nIncorrect: rows[i]['$columnIncorrect'],
       );
     });
+  }
+
+  Future<int> updateCorrect(int signId) async {
+    final Database db = await instance.database;
+    return await db.rawUpdate(
+        'UPDATE $table '
+        'SET $columnCorrect = $columnCorrect + 1 '
+        'WHERE $columnId = ?', [signId]);
+  }
+
+  Future<int> updateIncorrect(int signId) async {
+    final Database db = await instance.database;
+    return await db.rawUpdate(
+        'UPDATE $table '
+        'SET $columnIncorrect = $columnIncorrect + 1 '
+        'WHERE $columnId = ?', [signId]);
   }
 }
