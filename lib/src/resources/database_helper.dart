@@ -1,28 +1,9 @@
 import 'dart:io';
 
+import 'package:flashsigns/src/models/sign.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-
-class Sign {
-  final int id;
-  final String description;
-  final String url;
-  int nCorrect;
-  int nIncorrect;
-
-  Sign({this.id, this.description, this.url, this.nCorrect, this.nIncorrect});
-
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'description': description,
-      'url': url,
-      'correct': nCorrect,
-      'incorrect': nIncorrect,
-    };
-  }
-}
 
 class DatabaseHelper {
   static final _databaseName = "sign_database.db";
@@ -35,6 +16,7 @@ class DatabaseHelper {
   static final columnUrl = 'url';
   static final columnCorrect = 'correct';
   static final columnIncorrect = 'incorrect';
+  static final columnScore = 'score';
 
   DatabaseHelper._privateConstructor();
   static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
@@ -65,7 +47,8 @@ class DatabaseHelper {
         $columnDescription TEXT NOT NULL,
         $columnUrl TEXT NOT NULL,
         $columnCorrect INTEGER DEFAULT 0,
-        $columnIncorrect INTEGER DEFAULT 0
+        $columnIncorrect INTEGER DEFAULT 0,
+        $columnScore INTEGER DEFAULT 0
       )
     ''');
 
@@ -149,6 +132,7 @@ class DatabaseHelper {
         url: rows[i]['$columnUrl'],
         nCorrect: rows[i]['$columnCorrect'],
         nIncorrect: rows[i]['$columnIncorrect'],
+        score: rows[i]['$columnScore'],
       );
     });
   }
@@ -167,5 +151,13 @@ class DatabaseHelper {
         'UPDATE $table '
         'SET $columnIncorrect = $columnIncorrect + 1 '
         'WHERE $columnId = ?', [signId]);
+  }
+
+  Future<int> updateScore(int signId, int score) async {
+    final Database db = await instance.database;
+    return await db.rawUpdate(
+      'UPDATE $table '
+      'SET $columnScore = ? '
+      'WHERE $columnId = ?', [score, signId]);
   }
 }
