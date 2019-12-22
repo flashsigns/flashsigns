@@ -10,6 +10,8 @@ abstract class WorkingSignEvent extends Equatable {
 
 class LoadWorkingList extends WorkingSignEvent {}
 
+class ShowAnswer extends WorkingSignEvent {}
+
 class MarkGoodAnswer extends WorkingSignEvent {
   final Sign sign;
 
@@ -19,7 +21,7 @@ class MarkGoodAnswer extends WorkingSignEvent {
   List<Object> get props => [sign];
 
   @override
-  String toString() => 'MarkGoodAnswer { sign: $sign }';
+  String toString() => 'MarkGoodAnswer { sign: [${sign.id}] ${sign.description} }';
 }
 
 class MarkWrongAnswer extends WorkingSignEvent {
@@ -31,5 +33,5 @@ class MarkWrongAnswer extends WorkingSignEvent {
   List<Object> get props => [sign];
 
   @override
-  String toString() => 'MarkWrongAnswer { sign: $sign }';
+  String toString() => 'MarkWrongAnswer { sign: [${sign.id}] ${sign.description} }';
 }
