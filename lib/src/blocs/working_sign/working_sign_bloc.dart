@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:bloc/bloc.dart';
 import 'package:connectivity/connectivity.dart';
@@ -16,7 +17,6 @@ class WorkingSignBloc extends Bloc<WorkingSignEvent, WorkingSignState> {
   final DatabaseHelper signsRepository;
 
   List<Sign> _signs;
-  int _currentSignId = 0;
   VideoPlayerController _oldVideoController;
   VideoPlayerController _currentVideoController;
 
@@ -41,7 +41,7 @@ class WorkingSignBloc extends Bloc<WorkingSignEvent, WorkingSignState> {
   Stream<WorkingSignState> _mapLoadWorkingListToState() async * {
     try {
       _signs = await this.signsRepository.queryAllSigns();
-      final sign = _signs.elementAt(_currentSignId);
+      final sign = _signs.elementAt(0);
       _currentVideoController = await _prepareVideoController(sign);
 
       yield WorkingSignLoaded(sign, _currentVideoController);
@@ -90,39 +90,39 @@ class WorkingSignBloc extends Bloc<WorkingSignEvent, WorkingSignState> {
 
   Stream<WorkingSignState> _mapMarkGoodAnswerToState(MarkGoodAnswer event) async * {
     if (state is WorkingSignLoaded) {
-      _currentSignId = (_currentSignId + 1) % _signs.length;
-      final newSign = _signs.elementAt(_currentSignId);
+      // TODO: update score!
 
+      final newSign = _chooseNewSign();
       yield WorkingSignLoading();
+      yield * _loadNewSign(newSign);
+    }
+  }
 
-      try {
-        _oldVideoController = _currentVideoController;
-        _currentVideoController = await _prepareVideoController(newSign);
+  Sign _chooseNewSign() {
+    final rng = new Random();
+    final chosenId = rng.nextInt(_signs.length);
+    return _signs.elementAt(chosenId);
+  }
 
-        yield WorkingSignLoaded(newSign, _currentVideoController);
-        _oldVideoController.dispose();
-      } catch(_) {
-        yield WorkingSignNotLoaded();
-      }
+  Stream<WorkingSignState> _loadNewSign(final Sign newSign) async * {
+    try {
+      _oldVideoController = _currentVideoController;
+      _currentVideoController = await _prepareVideoController(newSign);
+
+      yield WorkingSignLoaded(newSign, _currentVideoController);
+      _oldVideoController.dispose();
+    } catch(_) {
+      yield WorkingSignNotLoaded();
     }
   }
 
   Stream<WorkingSignState> _mapMarkWrongAnswerToState(MarkWrongAnswer event) async * {
     if (state is WorkingSignLoaded) {
-      _currentSignId = (_currentSignId - 1) % _signs.length;
-      final newSign = _signs.elementAt(_currentSignId);
+      // TODO: update score!
 
+      final newSign = _chooseNewSign();
       yield WorkingSignLoading();
-
-      try {
-        _oldVideoController = _currentVideoController;
-        _currentVideoController = await _prepareVideoController(newSign);
-
-        yield WorkingSignLoaded(newSign, _currentVideoController);
-        _oldVideoController.dispose();
-      } catch(_) {
-        yield WorkingSignNotLoaded();
-      }
+      yield * _loadNewSign(newSign);
     }
   }
 }
