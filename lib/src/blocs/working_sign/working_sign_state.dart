@@ -16,13 +16,13 @@ class WorkingSignLoaded extends WorkingSignState {
   final VideoPlayerController videoController;
   final bool isAnswerVisible;
 
-  WorkingSignLoaded(this.sign, this.videoController, { this.isAnswerVisible = false });
+  const WorkingSignLoaded(this.sign, this.videoController, { this.isAnswerVisible = false });
 
   @override
   List<Object> get props => [sign, isAnswerVisible];
 
   @override
-  String toString() => 'WorkingSignLoaded { sign: [${sign.id}] ${sign.description}, isAnswerVisible: $isAnswerVisible }';
+  String toString() => "WorkingSignLoaded { sign: [${sign.id}] '${sign.description}', isAnswerVisible: $isAnswerVisible }";
 }
 
 class WorkingSignNotLoaded extends WorkingSignState {}

@@ -82,11 +82,15 @@ class _PracticeSignScreenState extends State<PracticeSignScreen> {
       return Expanded(child: Container(child: Center(child: AspectRatio(
         aspectRatio: videoController.value.aspectRatio,
         child: GestureDetector(
-            onTap: () {
-              bloc.add(ShowAnswer());
-              videoController.value.isPlaying ? videoController.pause() : videoController.play();
-            },
-            child: VideoPlayer(videoController)),
+          onTap: () {
+            bloc.add(ShowAnswer());
+            videoController.value.isPlaying ? videoController.pause() : videoController.play();
+          },
+          child: Padding(
+            child: VideoPlayer(videoController),
+            padding: EdgeInsets.only(top: 10.0),
+          ),
+        )
       ))));
     } else if (state is WorkingSignNotLoaded) {
       return Expanded(

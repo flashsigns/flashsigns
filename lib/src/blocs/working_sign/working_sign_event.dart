@@ -33,5 +33,5 @@ class MarkWrongAnswer extends WorkingSignEvent {
   List<Object> get props => [sign];
 
   @override
-  String toString() => 'MarkWrongAnswer { sign: [${sign.id}] ${sign.description} }';
+  String toString() => "MarkWrongAnswer { sign: [${sign.id}] '${sign.description}' }";
 }
