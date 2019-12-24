@@ -44,6 +44,8 @@ class WorkingSignBloc extends Bloc<WorkingSignEvent, WorkingSignState> {
       final sign = _signs.elementAt(0);
       _currentVideoController = await _prepareVideoController(sign);
 
+      print("Number of signs loaded: ${_signs.length}");
+
       yield WorkingSignLoaded(sign, _currentVideoController);
     } catch (_) {
       yield WorkingSignNotLoaded();
