@@ -1,8 +1,8 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:bloc/bloc.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:flashsigns/src/active_session.dart';
 import 'package:flashsigns/src/blocs/working_sign/working_sign_event.dart';
 import 'package:flashsigns/src/blocs/working_sign/working_sign_state.dart';
 import 'package:flashsigns/src/models/sign.dart';
@@ -16,7 +16,8 @@ import 'package:video_player/video_player.dart';
 class WorkingSignBloc extends Bloc<WorkingSignEvent, WorkingSignState> {
   final DatabaseHelper signsRepository;
 
-  List<Sign> _signs;
+  ActiveSession _activeSession;
+
   VideoPlayerController _oldVideoController;
   VideoPlayerController _currentVideoController;
 
@@ -40,11 +41,12 @@ class WorkingSignBloc extends Bloc<WorkingSignEvent, WorkingSignState> {
 
   Stream<WorkingSignState> _mapLoadWorkingListToState() async * {
     try {
-      _signs = await this.signsRepository.queryAllSigns();
-      final sign = _signs.elementAt(0);
-      _currentVideoController = await _prepareVideoController(sign);
+      final allSigns = await this.signsRepository.queryAllSigns();
+      print("Number of signs loaded: ${allSigns.length}");
+      _activeSession = ActiveSession(allSigns);
 
-      print("Number of signs loaded: ${_signs.length}");
+      final sign = _activeSession.nextSign();
+      _currentVideoController = await _prepareVideoController(sign);
 
       yield WorkingSignLoaded(sign, _currentVideoController);
     } catch (_) {
@@ -91,19 +93,15 @@ class WorkingSignBloc extends Bloc<WorkingSignEvent, WorkingSignState> {
   }
 
   Stream<WorkingSignState> _mapMarkGoodAnswerToState(MarkGoodAnswer event) async * {
+    final state = this.state;
+
     if (state is WorkingSignLoaded) {
-      // TODO: update score!
+      final currentSign = state.sign;
+      signsRepository.updateScore(currentSign.id, currentSign.score + 1);
 
-      final newSign = _chooseNewSign();
       yield WorkingSignLoading();
-      yield * _loadNewSign(newSign);
+      yield * _loadNewSign(_activeSession.nextSign());
     }
-  }
-
-  Sign _chooseNewSign() {
-    final rng = new Random();
-    final chosenId = rng.nextInt(_signs.length);
-    return _signs.elementAt(chosenId);
   }
 
   Stream<WorkingSignState> _loadNewSign(final Sign newSign) async * {
@@ -119,12 +117,14 @@ class WorkingSignBloc extends Bloc<WorkingSignEvent, WorkingSignState> {
   }
 
   Stream<WorkingSignState> _mapMarkWrongAnswerToState(MarkWrongAnswer event) async * {
-    if (state is WorkingSignLoaded) {
-      // TODO: update score!
+    final state = this.state;
 
-      final newSign = _chooseNewSign();
+    if (state is WorkingSignLoaded) {
+      final currentSign = state.sign;
+      signsRepository.updateScore(currentSign.id, currentSign.score - 1);
+
       yield WorkingSignLoading();
-      yield * _loadNewSign(newSign);
+      yield * _loadNewSign(_activeSession.nextSign());
     }
   }
 }
