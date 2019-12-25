@@ -14,14 +14,14 @@ import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 
 class WorkingSignBloc extends Bloc<WorkingSignEvent, WorkingSignState> {
-  final DatabaseHelper signsRepository;
-
   ActiveSession _activeSession;
 
   VideoPlayerController _oldVideoController;
   VideoPlayerController _currentVideoController;
 
-  WorkingSignBloc({@required this.signsRepository});
+  WorkingSignBloc({@required DatabaseHelper signsRepository}) {
+    _activeSession = ActiveSession(signsRepository: signsRepository);
+  }
 
   @override
   WorkingSignState get initialState => WorkingSignLoading();
@@ -41,15 +41,14 @@ class WorkingSignBloc extends Bloc<WorkingSignEvent, WorkingSignState> {
 
   Stream<WorkingSignState> _mapLoadWorkingListToState() async * {
     try {
-      final allSigns = await this.signsRepository.queryAllSigns();
-      print("Number of signs loaded: ${allSigns.length}");
-      _activeSession = ActiveSession(allSigns);
+      await _activeSession.init();
 
       final sign = _activeSession.nextSign();
       _currentVideoController = await _prepareVideoController(sign);
 
       yield WorkingSignLoaded(sign, _currentVideoController);
-    } catch (_) {
+    } catch (error) {
+      print("Loading failed with error: " + error.toString());
       yield WorkingSignNotLoaded();
     }
   }
@@ -97,10 +96,10 @@ class WorkingSignBloc extends Bloc<WorkingSignEvent, WorkingSignState> {
 
     if (state is WorkingSignLoaded) {
       final currentSign = state.sign;
-      signsRepository.updateScore(currentSign.id, currentSign.score + 1);
+      _activeSession.markCorrect(currentSign);
 
       yield WorkingSignLoading();
-      yield * _loadNewSign(_activeSession.nextSign());
+      yield * _loadNewSign(_findNewSign(state.sign));
     }
   }
 
@@ -111,9 +110,20 @@ class WorkingSignBloc extends Bloc<WorkingSignEvent, WorkingSignState> {
 
       yield WorkingSignLoaded(newSign, _currentVideoController);
       _oldVideoController.dispose();
-    } catch(_) {
+    } catch(error) {
+      print("Loading failed with error: " + error);
       yield WorkingSignNotLoaded();
     }
+  }
+
+  Sign _findNewSign(final Sign currentSign) {
+    Sign newSign;
+
+    do {
+      newSign = _activeSession.nextSign();
+    } while (newSign.id == currentSign.id);
+
+    return newSign;
   }
 
   Stream<WorkingSignState> _mapMarkWrongAnswerToState(MarkWrongAnswer event) async * {
@@ -121,7 +131,7 @@ class WorkingSignBloc extends Bloc<WorkingSignEvent, WorkingSignState> {
 
     if (state is WorkingSignLoaded) {
       final currentSign = state.sign;
-      signsRepository.updateScore(currentSign.id, currentSign.score - 1);
+      _activeSession.markWrong(currentSign);
 
       yield WorkingSignLoading();
       yield * _loadNewSign(_activeSession.nextSign());
