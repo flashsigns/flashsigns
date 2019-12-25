@@ -96,7 +96,7 @@ class WorkingSignBloc extends Bloc<WorkingSignEvent, WorkingSignState> {
 
     if (state is WorkingSignLoaded) {
       final currentSign = state.sign;
-      _activeSession.markCorrect(currentSign);
+      await _activeSession.markCorrect(currentSign);
 
       yield WorkingSignLoading();
       yield * _loadNewSign(_findNewSign(state.sign));

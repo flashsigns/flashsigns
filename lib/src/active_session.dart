@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:connectivity/connectivity.dart';
 import 'package:flashsigns/src/models/sign.dart';
 import 'package:flashsigns/src/resources/database_helper.dart';
 import 'package:meta/meta.dart';
@@ -22,7 +23,7 @@ class ActiveSession {
 
     _activeUnknownSigns = _selectUnknownSigns(_listSize);
     _activeKnownSigns = _selectKnownSigns(_listSize);
-    _fillWithNewSigns(_activeUnknownSigns);
+    await _fillWithNewSigns(_activeUnknownSigns);
 
     print("---");
     print("All signs:");
@@ -68,7 +69,14 @@ class ActiveSession {
                        .toList();
   }
 
-  void _fillWithNewSigns(List<Sign> targetList) {
+  Future _fillWithNewSigns(List<Sign> targetList) async {
+    final connectivityStatus = await Connectivity().checkConnectivity();
+
+    if (connectivityStatus != ConnectivityResult.wifi) {
+      print("No WiFi connection: not adding new sign");
+      return;
+    }
+
     final nActiveNewSigns = targetList.where((elem) => elem.score <= 0).length;
     final nRemainingNewSigns = 3 - nActiveNewSigns;
     final nSpotsForNewSigns = min(nRemainingNewSigns, _listSize - targetList.length);
@@ -94,14 +102,14 @@ class ActiveSession {
     return chosenList.elementAt(rng.nextInt(chosenList.length));
   }
 
-  void markCorrect(final Sign sign) {
+  Future markCorrect(final Sign sign) async {
     if (sign.score >= 4) {
       _activeKnownSigns.removeWhere((elem) => elem.id == sign.id);
       _refillList(_activeKnownSigns, _selectKnownSign);
 
       _activeUnknownSigns.removeWhere((elem) => elem.id == sign.id);
       _refillList(_activeUnknownSigns, _selectUnknownSign);
-      _fillWithNewSigns(_activeUnknownSigns);
+      await _fillWithNewSigns(_activeUnknownSigns);
     } else {
       updateScore(sign, sign.score + 1);
     }
