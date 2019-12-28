@@ -7,7 +7,7 @@ import 'package:sqflite/sqflite.dart';
 
 class DatabaseHelper {
   static final _databaseName = "sign_database.db";
-  static final _databaseVersion = 2;
+  static final _databaseVersion = 3;
 
   static final table = 'sign_table';
 
@@ -63,6 +63,7 @@ class DatabaseHelper {
 
     await insertBatch1(db);
     await insertBatch2(db);
+    await insertBatch3(db);
   }
 
   Future insertBatch1(Database db) async {
@@ -127,7 +128,7 @@ class DatabaseHelper {
       ("Famille", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/867C8B2E-056C-F719-AD82B498B34647BA.mp4"),
       ("Frère", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/86D5E78D-B318-6E84-8F753A1631B4CCB9.mp4"),
       ("Soeur", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/A81F47B0-B0DA-D926-0851506152D9205B.mp4"),
-      ("Jumeau  - Jumelle   1", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/D39AF790-0421-E6C9-AD4ED38681451DB5.mp4"),
+      ("Jumeau  - Jumelle", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/D39AF790-0421-E6C9-AD4ED38681451DB5.mp4"),
       ("Tante", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/7D698B23-E490-50DC-862004463DEAAF08.mp4"),
       ("Oncle", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/D4EBEBD6-E7E3-C52D-3672688D7C4B4EF3.mp4"),
       ("Cousin", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/05ADE721-EC30-62A3-A1B4F4B144DBBB03.mp4"),
@@ -139,7 +140,7 @@ class DatabaseHelper {
       ("Toucher", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/ADBC25D7-9DB4-90D6-E5CB0F704DD55B4A.mp4"),
       ("Écouter", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/user_upload/207326.mp4"),
       ("Voir", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/D882101C-9B98-48C7-35EFAF970E3C0F4B.mp4"),
-      ("Regarder   1", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/098609F2-A5A9-C9CD-A16B5C45B438DB79.mp4"),
+      ("Regarder", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/098609F2-A5A9-C9CD-A16B5C45B438DB79.mp4"),
       ("Sentir", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/D47F9D73-E675-B143-AFD977F9A0B67143.mp4"),
       ("Goûter", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/E10CD623-C1D1-520E-6FF4D53318C099FE.mp4"),
       ("Aimer", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/052BAB7B-B8CB-A7E5-201F80592D6E93E7.mp4"),
@@ -170,16 +171,52 @@ class DatabaseHelper {
       ("Train", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/ABCA8BE2-AB65-5118-A8F185E8D4DF6047.mp4"),
       ("Avion", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/198A9F0F-97D9-702F-B7B1B152EDBC4FA5.mp4"),
       ("Bateau", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/04215C0D-EE03-E924-EBCC2160B798F426.mp4"),
-      ("Autobus -Trolleybus - Bus", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/71AF745A-F1FF-6BCF-A821107C4CD67927.mp4"),
+      ("Autobus - Trolleybus - Bus", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/71AF745A-F1FF-6BCF-A821107C4CD67927.mp4"),
       ("Automobile - Voiture", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/FBA2A58B-C7CE-D875-5404B10E423DDEE6.mp4"),
       ("Conduire", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/E5F9BE42-CB3E-BD70-CBFB7A6931B75607.mp4"),
       ("Week-End", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/AE933F4C-F269-FDBE-2142FBF4EE149B7F.mp4")
     ''');
   }
 
+  Future insertBatch3(Database db) async {
+    await db.execute('''
+      INSERT INTO $table
+      ($columnDescription, $columnUrl)
+      VALUES
+      ("D'Accord - Accord", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/B2DB77E8-E15C-A46C-DAA25F01D8496C43.mp4"),
+      ("Compris", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/05398763-A86D-8910-853A9B60F220CC87.mp4"),
+      ("Différent", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/83F9C688-C637-24AA-B861C834F577A3B4.mp4"),
+      ("Prénom", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/BD9CDDA5-CB18-C472-5525C5ED930706EA.mp4"),
+      ("Nom", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/6FE3F814-FC4F-6589-FF320D4E0C3DF8D1.mp4"),
+      ("Vert", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/F856C99A-CE36-A0A4-EC8C02067E3AC7D9.mp4"),
+      ("Bleu", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/18C5B3EA-A0E0-C3D6-02E0A92D89B9EFF1.mp4"),
+      ("Jaune", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/F851C0E2-D514-50A2-2688CE0648CEA81D.mp4"),
+      ("Rouge", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/BDAC1BBF-F11B-D17E-666B6521E4104FB0.mp4"),
+      ("Noir", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/A8972D1C-EBD0-D742-8119E51275232EEF.mp4"),
+      ("Blanc - Blanche", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/18C245CC-9673-FB9E-E616F00FAA79F753.mp4"),
+      ("Autre", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/C45EF788-E135-31D9-CA75E88B4BB6CA8D.mp4"),
+      ("Après", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/18958155-0E76-7BCF-8B37381E65347A8A.mp4"),
+      ("Avant", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/8BE83E5E-B06D-90D6-C3690CFB3B21D40D.mp4"),
+      ("Cent", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/765A0DC2-9926-65E6-0D5BDE1FAD37CC56.mp4"),
+      ("Mille", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/D8C8D7DC-E2DA-5823-983E0BA5FE8F8A32.mp4"),
+      ("Million", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/503AC82D-AECD-EC28-FBD21864C0268EEC.mp4"),
+      ("Milliard", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/C8197EDF-DFAC-29B8-350C5D8D43392FF8.mp4"),
+      ("Ensuite", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/6AD94B83-B125-00F3-D562EBEA206835B2.mp4"),
+      ("Soif", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/AB14F7F7-C357-ACAF-C830D13865453F7A.mp4"),
+      ("Faim", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/52704C3F-00AB-3957-7BC6E91A81C5F0B0.mp4"),
+      ("Combien", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/F9B1A65C-01A6-0291-AD31491616E47A80.mp4"),
+      ("Avoir Besoin", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/E0290FC2-C147-DC0C-0E86A3477A3EB2C8.mp4"),
+      ("Ne Pas Avoir Besoin", "https://signsuisse.sgb-fss.ch/fileadmin/signsuisse_ressources/videos/E219F791-C351-3055-D6F08EDAA5BBD4D6.mp4")
+    ''');
+  }
+
   Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion <= 1) {
       insertBatch2(db);
+    }
+
+    if (oldVersion <= 2) {
+      insertBatch3(db);
     }
   }
 
