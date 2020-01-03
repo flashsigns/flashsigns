@@ -20,15 +20,26 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-        home: BlocProvider(
-          create: (context) {
-            return WorkingSignBloc(signsRepository: DatabaseHelper.instance)
-              ..add(LoadWorkingList());
-          },
-        child: PracticeSignScreen(),
-      )
+        home: _practiceSignRoute(),
     );
   }
+}
+
+Widget _practiceSignRoute() {
+  return MultiBlocProvider(
+    providers: [
+      BlocProvider<ConnectivityBloc>(
+        create: (context) => ConnectivityBloc(),
+      ),
+      BlocProvider<WorkingSignBloc>(
+        create: (context) {
+          return WorkingSignBloc(signsRepository: DatabaseHelper.instance)
+            ..add(LoadWorkingList());
+        },
+      ),
+    ],
+    child: PracticeSignScreen(),
+  );
 }
 
 class PracticeSignScreen extends StatefulWidget {
@@ -55,18 +66,40 @@ class _PracticeSignScreenState extends State<PracticeSignScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<WorkingSignBloc>(context);
+    final _bloc = BlocProvider.of<WorkingSignBloc>(context);
+    final _connectivity = BlocProvider.of<ConnectivityBloc>(context)
+            ..add(SubscribeConnectivity());
 
     return Scaffold(
       appBar: AppBar(
         title: Text('FlashSigns'),
+        actions: <Widget>[
+          BlocBuilder<ConnectivityBloc, ConnectivityState>(
+              bloc: _connectivity,
+              builder: (context, state) {
+                if (state is ConnectivityWifi) {
+                  return Container(width: 0, height: 0);
+                } else {
+                  return Center(child: Padding(
+                      child: Text(
+                          "Offline".toUpperCase(),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          )
+                      ),
+                      padding: EdgeInsets.only(right: 10.0)
+                  ));
+                }
+              }
+          ),
+        ],
       ),
       body: Container(
           child: BlocBuilder<WorkingSignBloc, WorkingSignState>(
               builder: (context, state) {
                 return Column(children: [
-                  _videoWidget(bloc, state),
-                  _scoreButtonsWidget(bloc, state),
+                  _videoWidget(_bloc, state),
+                  _scoreButtonsWidget(_bloc, state),
                   _descriptionWidget(state),
                 ]);
               }
