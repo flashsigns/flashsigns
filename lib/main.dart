@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 
 void main() {
@@ -80,18 +81,30 @@ class _PracticeSignScreenState extends State<PracticeSignScreen> {
                 if (state is ConnectivityWifi) {
                   return Container(width: 0, height: 0);
                 } else {
-                  return Center(child: Padding(
-                      child: Text(
-                          "Offline".toUpperCase(),
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                          )
-                      ),
-                      padding: EdgeInsets.only(right: 10.0)
+                  return Center(child: Text(
+                      "Offline".toUpperCase(),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      )
                   ));
                 }
               }
           ),
+          Builder(
+              builder: (context) => IconButton(
+                icon: Icon(Icons.settings),
+                onPressed: () {
+                  Scaffold.of(context).showSnackBar(SnackBar(
+                    content: Text("TODO: open settings"),
+                  ));
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SettingsRoute())
+                  );
+                },
+              )
+          )
         ],
       ),
       body: Container(
@@ -188,5 +201,34 @@ class _PracticeSignScreenState extends State<PracticeSignScreen> {
     } else {
       return Expanded(child: Center(child: CircularProgressIndicator()));
     }
+  }
+}
+
+class SettingsRoute extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("FlashSigns"),
+      ),
+      body: ListView(
+        children: <Widget>[
+          CheckboxListTile(
+            value: true,
+            title: Text("Only download over WiFi"),
+            onChanged: (value) async {
+              print("clicked: $value");
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              prefs.setBool("DOWNLOAD_DATA", !value);
+            },
+          ),
+          CheckboxListTile(
+            value: true,
+            title: Text("gnag 2ww"),
+            onChanged: (value) {},
+          ),
+        ],
+      )
+    );
   }
 }

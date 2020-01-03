@@ -24,6 +24,7 @@ dependencies:
   path_provider: ^1.4.0
   sqflite: ^1.1.7+1
   video_player: ^0.10.2+5
+  shared_preferences: ^0.5.6
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
