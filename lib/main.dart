@@ -21,32 +21,36 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-        home: _practiceSignRoute(),
+    return MultiBlocProvider(
+        providers: [
+          BlocProvider<ConnectivityBloc>(
+            create: (context) => ConnectivityBloc(),
+          ),
+          BlocProvider<PreferencesBloc>(
+            create: (context) => PreferencesBloc(),
+          ),
+        ],
+        child: MaterialApp(
+          title: 'FlashSigns',
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+          ),
+          home: _practiceSignRoute(),
+        )
     );
   }
 }
 
 Widget _practiceSignRoute() {
-  return MultiBlocProvider(
-    providers: [
-      BlocProvider<ConnectivityBloc>(
-        create: (context) => ConnectivityBloc(),
-      ),
-      BlocProvider<PreferencesBloc>(
-        create: (context) => PreferencesBloc(),
-      ),
-      BlocProvider<WorkingSignBloc>(
-        create: (context) {
-          return WorkingSignBloc(signsRepository: DatabaseHelper.instance)
-            ..add(LoadWorkingList());
-        },
-      ),
-    ],
+  return BlocProvider<WorkingSignBloc>(
+    create: (context) {
+      return WorkingSignBloc(
+        signsRepository: DatabaseHelper.instance,
+        connectivityBloc: BlocProvider.of<ConnectivityBloc>(context),
+        preferencesBloc: BlocProvider.of<PreferencesBloc>(context),
+      )
+        ..add(LoadWorkingList());
+    },
     child: PracticeSignScreen(),
   );
 }
@@ -209,14 +213,7 @@ class _PracticeSignScreenState extends State<PracticeSignScreen> {
 }
 
 Widget _settingsRoute() {
-  return MultiBlocProvider(
-      providers: [
-        BlocProvider<PreferencesBloc>(
-          create: (context) => PreferencesBloc(),
-        ),
-      ],
-      child: SettingsScreen()
-  );
+  return SettingsScreen();
 }
 
 class SettingsScreen extends StatelessWidget {

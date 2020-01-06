@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
-import 'package:connectivity/connectivity.dart';
 import 'package:flashsigns/src/active_session.dart';
+import 'package:flashsigns/src/blocs/blocs.dart';
+import 'package:flashsigns/src/blocs/preferences/preferences.dart';
 import 'package:flashsigns/src/blocs/working_sign/working_sign_event.dart';
 import 'package:flashsigns/src/blocs/working_sign/working_sign_state.dart';
 import 'package:flashsigns/src/models/sign.dart';
@@ -15,12 +17,22 @@ import 'package:video_player/video_player.dart';
 
 class WorkingSignBloc extends Bloc<WorkingSignEvent, WorkingSignState> {
   ActiveSession _activeSession;
+  final ConnectivityBloc connectivityBloc;
+  final PreferencesBloc preferencesBloc;
 
   VideoPlayerController _oldVideoController;
   VideoPlayerController _currentVideoController;
 
-  WorkingSignBloc({@required DatabaseHelper signsRepository}) {
+  WorkingSignBloc({
+    @required DatabaseHelper signsRepository,
+    @required this.connectivityBloc,
+    @required this.preferencesBloc,
+  }) {
     _activeSession = ActiveSession(signsRepository: signsRepository);
+
+    if (preferencesBloc.state is PreferencesUnknown) {
+      preferencesBloc.add(LoadPreferences());
+    }
   }
 
   @override
