@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:flashsigns/src/blocs/blocs.dart';
+import 'package:flashsigns/src/blocs/preferences/preferences.dart';
 import 'package:flashsigns/src/resources/database_helper.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +11,6 @@ import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share/share.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 
 void main() {
@@ -36,6 +36,9 @@ Widget _practiceSignRoute() {
     providers: [
       BlocProvider<ConnectivityBloc>(
         create: (context) => ConnectivityBloc(),
+      ),
+      BlocProvider<PreferencesBloc>(
+        create: (context) => PreferencesBloc(),
       ),
       BlocProvider<WorkingSignBloc>(
         create: (context) {
@@ -72,8 +75,8 @@ class _PracticeSignScreenState extends State<PracticeSignScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final _bloc = BlocProvider.of<WorkingSignBloc>(context);
-    final _connectivity = BlocProvider.of<ConnectivityBloc>(context)
+    final _workingSignBloc = BlocProvider.of<WorkingSignBloc>(context);
+    final _connectivityBloc = BlocProvider.of<ConnectivityBloc>(context)
             ..add(SubscribeConnectivity());
 
     return Scaffold(
@@ -81,7 +84,7 @@ class _PracticeSignScreenState extends State<PracticeSignScreen> {
         title: Text('FlashSigns'),
         actions: <Widget>[
           BlocBuilder<ConnectivityBloc, ConnectivityState>(
-              bloc: _connectivity,
+              bloc: _connectivityBloc,
               builder: (context, state) {
                 if (state is ConnectivityWifi) {
                   return Container(width: 0, height: 0);
@@ -101,7 +104,7 @@ class _PracticeSignScreenState extends State<PracticeSignScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => SettingsRoute())
+                    MaterialPageRoute(builder: (context) => _settingsRoute())
                   );
                 },
               )
@@ -112,8 +115,8 @@ class _PracticeSignScreenState extends State<PracticeSignScreen> {
           child: BlocBuilder<WorkingSignBloc, WorkingSignState>(
               builder: (context, state) {
                 return Column(children: [
-                  _videoWidget(_bloc, state),
-                  _scoreButtonsWidget(_bloc, state),
+                  _videoWidget(_workingSignBloc, state),
+                  _scoreButtonsWidget(_workingSignBloc, state),
                   _descriptionWidget(state),
                 ]);
               }
@@ -205,28 +208,47 @@ class _PracticeSignScreenState extends State<PracticeSignScreen> {
   }
 }
 
-class SettingsRoute extends StatelessWidget {
+Widget _settingsRoute() {
+  return MultiBlocProvider(
+      providers: [
+        BlocProvider<PreferencesBloc>(
+          create: (context) => PreferencesBloc(),
+        ),
+      ],
+      child: SettingsScreen()
+  );
+}
+
+class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("FlashSigns"),
-      ),
-      body: ListView(
-        children: <Widget>[
+    final _preferencesBloc = BlocProvider.of<PreferencesBloc>(context);
 
-          CheckboxListTile(
-            value: true,
-            title: Text("Only download over WiFi"),
-            onChanged: (value) async {
-              print("clicked: $value");
-              SharedPreferences prefs = await SharedPreferences.getInstance();
-              prefs.setBool("DOWNLOAD_DATA", !value);
-            },
-          ),
-          ..._debugTiles(),
-        ],
-      )
+    return Scaffold(
+        appBar: AppBar(
+          title: Text("FlashSigns"),
+        ),
+        body: BlocBuilder<PreferencesBloc, PreferencesState>(
+          bloc: _preferencesBloc,
+          builder: (context, state) {
+            if (state is PreferencesChanged) {
+              return ListView(
+                  children: <Widget>[
+                    CheckboxListTile(
+                      value: state.useMobileData,
+                      title: Text("Only download over WiFi"),
+                      onChanged: (value) async {
+                        _preferencesBloc.add(SetUseMobileData(value));
+                      },
+                    ),
+                    ..._debugTiles(),
+                  ]);
+            } else {
+              _preferencesBloc.add(LoadPreferences());
+              return Container(child: Center(child: CircularProgressIndicator()));
+            }
+          },
+        )
     );
   }
 
