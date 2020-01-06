@@ -90,7 +90,10 @@ class _PracticeSignScreenState extends State<PracticeSignScreen> {
           BlocBuilder<ConnectivityBloc, ConnectivityState>(
               bloc: _connectivityBloc,
               builder: (context, state) {
-                if (state is ConnectivityWifi) {
+                final preferencesState = BlocProvider.of<PreferencesBloc>(context).state;
+                final useMobileData = preferencesState is PreferencesChanged && preferencesState.useMobileData;
+
+                if (useMobileData || state is ConnectivityWifi) {
                   return Container(width: 0, height: 0);
                 } else {
                   return Center(child: Text(
@@ -232,10 +235,10 @@ class SettingsScreen extends StatelessWidget {
               return ListView(
                   children: <Widget>[
                     CheckboxListTile(
-                      value: state.useMobileData,
+                      value: !state.useMobileData,
                       title: Text("Only download over WiFi"),
-                      onChanged: (value) async {
-                        _preferencesBloc.add(SetUseMobileData(value));
+                      onChanged: (useWifiOnly) async {
+                        _preferencesBloc.add(SetUseMobileData(!useWifiOnly));
                       },
                     ),
                     ..._debugTiles(),
