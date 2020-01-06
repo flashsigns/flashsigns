@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bloc/bloc.dart';
 import 'package:flashsigns/src/blocs/blocs.dart';
 import 'package:flashsigns/src/resources/database_helper.dart';
@@ -5,6 +7,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:path/path.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:share/share.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 
@@ -94,10 +99,6 @@ class _PracticeSignScreenState extends State<PracticeSignScreen> {
               builder: (context) => IconButton(
                 icon: Icon(Icons.settings),
                 onPressed: () {
-                  Scaffold.of(context).showSnackBar(SnackBar(
-                    content: Text("TODO: open settings"),
-                  ));
-
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => SettingsRoute())
@@ -213,6 +214,7 @@ class SettingsRoute extends StatelessWidget {
       ),
       body: ListView(
         children: <Widget>[
+
           CheckboxListTile(
             value: true,
             title: Text("Only download over WiFi"),
@@ -222,13 +224,87 @@ class SettingsRoute extends StatelessWidget {
               prefs.setBool("DOWNLOAD_DATA", !value);
             },
           ),
-          CheckboxListTile(
-            value: true,
-            title: Text("gnag 2ww"),
-            onChanged: (value) {},
-          ),
+          ..._debugTiles(),
         ],
       )
     );
   }
+
+  List<StatelessWidget> _debugTiles() {
+    if (kReleaseMode) {
+      return [];
+    }
+
+    return [
+      Divider(),
+      Builder(builder: (context) => ListTile(
+        leading: Icon(Icons.save),
+        title: Text("Export database"),
+        subtitle: Text("Save database on SD card"),
+        onTap: () {
+          if (Platform.isAndroid) {
+            PermissionHandler().requestPermissions([PermissionGroup.storage]).then((Map<PermissionGroup, PermissionStatus> result) {
+              final storagePermission = result[PermissionGroup.storage];
+
+              if (storagePermission == PermissionStatus.granted) {
+                final downloadsPath = "/storage/emulated/0/Download/";
+                DatabaseHelper.instance.closeDatabase();
+                DatabaseHelper.instance.databaseFile.then((file) => file.copySync(join(downloadsPath, "flashsigns_exported_database.db")));
+
+                Scaffold.of(context).showSnackBar(SnackBar(
+                  content: Text("Database exported"),
+                ));
+              }
+            });
+          } else {
+            Scaffold.of(context).showSnackBar(SnackBar(
+              content: Text("Not implemented on this platform!"),
+            ));
+          }
+        }
+    )),
+    Builder(builder: (context) => ListTile(
+        leading: Icon(Icons.import_export),
+        title: Text("Import database"),
+        subtitle: Text("Replace database with the one from SD card, if existing"),
+        onTap: () {
+          if (Platform.isAndroid) {
+            PermissionHandler().requestPermissions([PermissionGroup.storage]).then((Map<PermissionGroup, PermissionStatus> result) {
+              final storagePermission = result[PermissionGroup.storage];
+
+              if (storagePermission == PermissionStatus.granted) {
+                final downloadsPath = "/storage/emulated/0/Download/";
+                final databaseToImport = File(join(downloadsPath, "flashsigns_exported_database.db"));
+                if (!databaseToImport.existsSync()) {
+                  Scaffold.of(context).showSnackBar(SnackBar(
+                    content: Text("Import failed: nothing to import!"),
+                  ));
+                  return;
+                }
+
+                DatabaseHelper.instance.closeDatabase();
+                DatabaseHelper.instance.databaseFile.then((file) => databaseToImport.copySync(file.path));
+
+                Scaffold.of(context).showSnackBar(SnackBar(
+                  content: Text("Database imported"),
+                ));
+              }
+            });
+          } else {
+            Scaffold.of(context).showSnackBar(SnackBar(
+              content: Text("Not implemented on this platform!"),
+            ));
+          }
+        },
+      )),
+      ListTile(
+        leading: Icon(Icons.share),
+        title: Text("Share..."),
+        onTap: () {
+          DatabaseHelper.instance.closeDatabase();
+          DatabaseHelper.instance.databaseFile.then((file) => Share.shareFile(file));
+        },
+    )
+    ];
+    }
 }

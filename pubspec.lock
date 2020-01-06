@@ -163,6 +163,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.8.0+1"
+  permission_handler:
+    dependency: "direct main"
+    description:
+      name: permission_handler
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "4.0.0"
   petitparser:
     dependency: transitive
     description:
@@ -198,6 +205,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.22.6"
+  share:
+    dependency: "direct main"
+    description:
+      path: "packages/share"
+      ref: "feature/shareFile"
+      resolved-ref: "697c89b457f1ddf0276e506ca187325db964c909"
+      url: "https://github.com/pboos/plugins.git"
+    source: git
+    version: "0.6.3+5"
   shared_preferences:
     dependency: "direct main"
     description:

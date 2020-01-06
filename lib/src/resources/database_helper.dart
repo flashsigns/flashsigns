@@ -21,6 +21,15 @@ class DatabaseHelper {
   DatabaseHelper._privateConstructor();
   static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
 
+  static File _databaseFile;
+  Future<File> get databaseFile async {
+    if (_databaseFile != null) return _databaseFile;
+
+    Directory appDocDir = await getApplicationDocumentsDirectory();
+    appDocDir.list().map((FileSystemEntity event) => print(event.path));
+    return File(join(appDocDir.path, _databaseName));
+  }
+
   static Database _database;
   Future<Database> get database async {
     if (_database != null) return _database;
@@ -29,9 +38,13 @@ class DatabaseHelper {
     return _database;
   }
 
+  void closeDatabase() {
+    _database?.close();
+    _database = null;
+  }
+
   _initDatabase() async {
-    Directory appDocDir = await getApplicationDocumentsDirectory();
-    String databasePath = join(appDocDir.path, _databaseName);
+    String databasePath = (await databaseFile).path;
 
     return await openDatabase(
       databasePath,
