@@ -72,11 +72,9 @@ class WorkingSignBloc extends Bloc<WorkingSignEvent, WorkingSignState> {
     final doesExist = await videoFile.exists();
 
     if (!doesExist) {
-      final connectivityStatus = await Connectivity().checkConnectivity();
-
-      if (connectivityStatus != ConnectivityResult.wifi) {
-        throw("A WiFi connection is required!");
-      } else {
+      final _state = preferencesBloc.state;
+      if ((_state is PreferencesChanged && _state.useMobileData)
+          || connectivityBloc.state is ConnectivityWifi) {
         await FlutterDownloader.enqueue(
           fileName: videoFilename,
           url: sign.url,
@@ -84,6 +82,8 @@ class WorkingSignBloc extends Bloc<WorkingSignEvent, WorkingSignState> {
           showNotification: false,
           openFileFromNotification: false,
         );
+      } else {
+        throw("A WiFi connection is required!");
       }
     }
 
