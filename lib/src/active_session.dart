@@ -70,6 +70,7 @@ class ActiveSession {
   }
 
   Future _fillWithNewSigns(List<Sign> targetList) async {
+    // TODO: use connectivityBloc!
     final connectivityStatus = await Connectivity().checkConnectivity();
 
     if (connectivityStatus != ConnectivityResult.wifi) {

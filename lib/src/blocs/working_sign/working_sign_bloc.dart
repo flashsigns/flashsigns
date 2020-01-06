@@ -55,8 +55,13 @@ class WorkingSignBloc extends Bloc<WorkingSignEvent, WorkingSignState> {
     try {
       await _activeSession.init();
 
-      final sign = _activeSession.nextSign();
-      _currentVideoController = await _prepareVideoController(sign);
+      Sign sign;
+      do {
+        sign = _activeSession.nextSign();
+      } while (!await _prepareSign(sign));
+
+      final videoFile = await _fetchVideoFile(sign);
+      _currentVideoController = await _prepareVideoController(videoFile);
 
       yield WorkingSignLoaded(sign, _currentVideoController);
     } catch (error) {
@@ -65,28 +70,56 @@ class WorkingSignBloc extends Bloc<WorkingSignEvent, WorkingSignState> {
     }
   }
 
-  Future<VideoPlayerController> _prepareVideoController(final Sign sign) async {
-    final videoFilename = sign.id.toString() + ".mp4";
-    final videoDir = await getApplicationDocumentsDirectory();
-    final videoFile = File(join(videoDir.path, videoFilename));
-    final doesExist = await videoFile.exists();
+  Future<bool> _prepareSign(final Sign sign) async {
+    final videoFile = await _fetchVideoFile(sign);
 
-    if (!doesExist) {
-      final _state = preferencesBloc.state;
-      if ((_state is PreferencesChanged && _state.useMobileData)
-          || connectivityBloc.state is ConnectivityWifi) {
-        await FlutterDownloader.enqueue(
-          fileName: videoFilename,
-          url: sign.url,
-          savedDir: videoDir.path,
-          showNotification: false,
-          openFileFromNotification: false,
-        );
-      } else {
-        throw("A WiFi connection is required!");
-      }
+    if (await _isAvailableLocally(videoFile)) {
+      return true;
     }
 
+    final preferenceState = preferencesBloc.state;
+    final useMobileData = preferenceState is PreferencesChanged && preferenceState.useMobileData;
+    final canDownloadVideo = useMobileData || connectivityBloc.state is ConnectivityWifi;
+    if (!canDownloadVideo) {
+      return false;
+    }
+
+    await _downloadVideo(sign);
+    return true;
+  }
+
+  Future<File> _fetchVideoFile(final Sign sign) async {
+    final videoFilename = _fetchVideoFilename(sign);
+    final videoDir = await _fetchVideoDir();
+
+    return File(join(videoDir.path, videoFilename));
+  }
+
+  String _fetchVideoFilename(final Sign sign) {
+    return sign.id.toString() + ".mp4";
+  }
+
+  Future<Directory> _fetchVideoDir() async {
+    return getApplicationDocumentsDirectory();
+  }
+
+  Future<bool> _isAvailableLocally(final File videoFile) async {
+    return await videoFile.exists();
+  }
+
+  // TODO should return when the download is finished!
+  // TODO: create an _enqueueVideoDownload(sign)?
+  Future<void> _downloadVideo(final Sign sign) async {
+    return FlutterDownloader.enqueue(
+      fileName: _fetchVideoFilename(sign),
+      url: sign.url,
+      savedDir: (await _fetchVideoDir()).path,
+      showNotification: false,
+      openFileFromNotification: false,
+    );
+  }
+
+  Future<VideoPlayerController> _prepareVideoController(final File videoFile) async {
     final controller = VideoPlayerController.file(videoFile);
     await controller.initialize();
     controller.setLooping(true);
@@ -115,10 +148,12 @@ class WorkingSignBloc extends Bloc<WorkingSignEvent, WorkingSignState> {
     }
   }
 
+  // TODO: may need to download it!
   Stream<WorkingSignState> _loadNewSign(final Sign newSign) async * {
     try {
       _oldVideoController = _currentVideoController;
-      _currentVideoController = await _prepareVideoController(newSign);
+      final videoFile = await _fetchVideoFile(newSign);
+      _currentVideoController = await _prepareVideoController(videoFile);
 
       yield WorkingSignLoaded(newSign, _currentVideoController);
       _oldVideoController.dispose();
