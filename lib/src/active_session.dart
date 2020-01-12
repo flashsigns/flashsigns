@@ -2,11 +2,11 @@ import 'dart:math';
 
 import 'package:connectivity/connectivity.dart';
 import 'package:flashsigns/src/models/sign.dart';
-import 'package:flashsigns/src/resources/database_helper.dart';
+import 'package:flashsigns/src/resources/signs_repository.dart';
 import 'package:meta/meta.dart';
 
 class ActiveSession {
-  final DatabaseHelper signsRepository;
+  final SignsRepository signsRepository;
   List<Sign> _signs;
 
   List<Sign> _activeUnknownSigns; // Window of "unknown" signs in _signs

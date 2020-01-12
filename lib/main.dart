@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:flashsigns/src/blocs/blocs.dart';
 import 'package:flashsigns/src/blocs/preferences/preferences.dart';
-import 'package:flashsigns/src/resources/database_helper.dart';
+import 'package:flashsigns/src/resources/signs_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -45,7 +45,7 @@ Widget _practiceSignRoute() {
   return BlocProvider<WorkingSignBloc>(
     create: (context) {
       return WorkingSignBloc(
-        signsRepository: DatabaseHelper.instance,
+        signsRepository: SignsRepository.instance,
         connectivityBloc: BlocProvider.of<ConnectivityBloc>(context),
         preferencesBloc: BlocProvider.of<PreferencesBloc>(context),
       )
@@ -270,8 +270,8 @@ class SettingsScreen extends StatelessWidget {
 
               if (storagePermission == PermissionStatus.granted) {
                 final downloadsPath = "/storage/emulated/0/Download/";
-                DatabaseHelper.instance.closeDatabase();
-                DatabaseHelper.instance.databaseFile.then((file) => file.copySync(join(downloadsPath, "flashsigns_exported_database.db")));
+                SignsRepository.instance.closeDatabase();
+                SignsRepository.instance.databaseFile.then((file) => file.copySync(join(downloadsPath, "flashsigns_exported_database.db")));
 
                 Scaffold.of(context).showSnackBar(SnackBar(
                   content: Text("Database exported"),
@@ -304,8 +304,8 @@ class SettingsScreen extends StatelessWidget {
                   return;
                 }
 
-                DatabaseHelper.instance.closeDatabase();
-                DatabaseHelper.instance.databaseFile.then((file) => databaseToImport.copySync(file.path));
+                SignsRepository.instance.closeDatabase();
+                SignsRepository.instance.databaseFile.then((file) => databaseToImport.copySync(file.path));
 
                 Scaffold.of(context).showSnackBar(SnackBar(
                   content: Text("Database imported"),
@@ -323,8 +323,8 @@ class SettingsScreen extends StatelessWidget {
         leading: Icon(Icons.share),
         title: Text("Share..."),
         onTap: () {
-          DatabaseHelper.instance.closeDatabase();
-          DatabaseHelper.instance.databaseFile.then((file) => Share.shareFile(file));
+          SignsRepository.instance.closeDatabase();
+          SignsRepository.instance.databaseFile.then((file) => Share.shareFile(file));
         },
     )
     ];

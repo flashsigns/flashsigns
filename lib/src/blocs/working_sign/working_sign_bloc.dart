@@ -8,7 +8,7 @@ import 'package:flashsigns/src/blocs/preferences/preferences.dart';
 import 'package:flashsigns/src/blocs/working_sign/working_sign_event.dart';
 import 'package:flashsigns/src/blocs/working_sign/working_sign_state.dart';
 import 'package:flashsigns/src/models/sign.dart';
-import 'package:flashsigns/src/resources/database_helper.dart';
+import 'package:flashsigns/src/resources/signs_repository.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart';
@@ -24,7 +24,7 @@ class WorkingSignBloc extends Bloc<WorkingSignEvent, WorkingSignState> {
   VideoPlayerController _currentVideoController;
 
   WorkingSignBloc({
-    @required DatabaseHelper signsRepository,
+    @required SignsRepository signsRepository,
     @required this.connectivityBloc,
     @required this.preferencesBloc,
   }) {

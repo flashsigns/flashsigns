@@ -5,7 +5,7 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
-class DatabaseHelper {
+class SignsRepository {
   static final _databaseName = "sign_database.db";
   static final _databaseVersion = 3;
 
@@ -18,8 +18,8 @@ class DatabaseHelper {
   static final columnIncorrect = 'incorrect';
   static final columnScore = 'score';
 
-  DatabaseHelper._privateConstructor();
-  static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
+  SignsRepository._privateConstructor();
+  static final SignsRepository instance = SignsRepository._privateConstructor();
 
   static File _databaseFile;
   Future<File> get databaseFile async {
