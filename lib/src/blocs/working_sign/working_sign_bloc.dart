@@ -45,25 +45,35 @@ class WorkingSignBloc extends Bloc<WorkingSignEvent, WorkingSignState> {
     } else if (event is ShowAnswer) {
       yield* _mapShowAnswerToState();
     } else if (event is MarkGoodAnswer) {
-      yield* _mapMarkGoodAnswerToState(event);
+      yield* _mapMarkAnswerToState(event);
     } else if (event is MarkWrongAnswer) {
-      yield* _mapMarkWrongAnswerToState(event);
+      yield* _mapMarkAnswerToState(event);
     }
   }
 
   Stream<WorkingSignState> _mapLoadWorkingListToState() async * {
-    try {
-      await _activeSession.init();
+    await _activeSession.init();
+    yield* _loadNextSign();
+  }
 
+  Stream<WorkingSignState> _loadNextSign() async * {
+    final state = this.state;
+
+    try {
       Sign sign;
+      // TODO: this can infinite-loop
       do {
-        sign = _activeSession.nextSign();
+        do {
+          sign = _activeSession.nextSign();
+        } while (state is WorkingSignLoaded && state.sign.id == sign.id);
       } while (!await _prepareSign(sign));
 
+      _oldVideoController = _currentVideoController;
       final videoFile = await _fetchVideoFile(sign);
       _currentVideoController = await _prepareVideoController(videoFile);
 
       yield WorkingSignLoaded(sign, _currentVideoController);
+      _oldVideoController?.dispose();
     } catch (error) {
       print("Loading failed with error: " + error.toString());
       yield WorkingSignNotLoaded();
@@ -136,52 +146,16 @@ class WorkingSignBloc extends Bloc<WorkingSignEvent, WorkingSignState> {
     }
   }
 
-  Stream<WorkingSignState> _mapMarkGoodAnswerToState(MarkGoodAnswer event) async * {
-    final state = this.state;
+  Stream<WorkingSignState> _mapMarkAnswerToState(WorkingSignEvent event) async * {
+    if (event is MarkGoodAnswer) {
+      await _activeSession.markCorrect(event.sign);
+    } else if (event is MarkWrongAnswer) {
+      _activeSession.markWrong(event.sign);
+    }
 
     if (state is WorkingSignLoaded) {
-      final currentSign = state.sign;
-      await _activeSession.markCorrect(currentSign);
-
       yield WorkingSignLoading();
-      yield * _loadNewSign(_findNewSign(state.sign));
-    }
-  }
-
-  // TODO: may need to download it!
-  Stream<WorkingSignState> _loadNewSign(final Sign newSign) async * {
-    try {
-      _oldVideoController = _currentVideoController;
-      final videoFile = await _fetchVideoFile(newSign);
-      _currentVideoController = await _prepareVideoController(videoFile);
-
-      yield WorkingSignLoaded(newSign, _currentVideoController);
-      _oldVideoController.dispose();
-    } catch(error) {
-      print("Loading failed with error: " + error);
-      yield WorkingSignNotLoaded();
-    }
-  }
-
-  Sign _findNewSign(final Sign currentSign) {
-    Sign newSign;
-
-    do {
-      newSign = _activeSession.nextSign();
-    } while (newSign.id == currentSign.id);
-
-    return newSign;
-  }
-
-  Stream<WorkingSignState> _mapMarkWrongAnswerToState(MarkWrongAnswer event) async * {
-    final state = this.state;
-
-    if (state is WorkingSignLoaded) {
-      final currentSign = state.sign;
-      _activeSession.markWrong(currentSign);
-
-      yield WorkingSignLoading();
-      yield * _loadNewSign(_activeSession.nextSign());
+      yield* _loadNextSign();
     }
   }
 }

@@ -70,7 +70,7 @@ class ActiveSession {
   }
 
   Future _fillWithNewSigns(List<Sign> targetList) async {
-    // TODO: use connectivityBloc!
+    // TODO: use connectivityBloc and preferences bloc => need for a bloc just for that?
     final connectivityStatus = await Connectivity().checkConnectivity();
 
     if (connectivityStatus != ConnectivityResult.wifi) {
