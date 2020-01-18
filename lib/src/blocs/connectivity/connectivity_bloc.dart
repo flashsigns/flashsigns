@@ -14,6 +14,10 @@ class ConnectivityBloc extends Bloc<ConnectivityEvent, ConnectivityState> {
   Stream<ConnectivityState> mapEventToState(event) async* {
     if (event is SubscribeConnectivity) {
       _connectivityStream ??= Connectivity().onConnectivityChanged.listen((result) => add(ConnectivityChanged(result)));
+
+      if (state is ConnectivityUnknown) {
+        add(ConnectivityChanged(await Connectivity().checkConnectivity()));
+      }
     } else if (event is ConnectivityChanged) {
       yield* _mapConnectivityChangedToState(event);
     } else if (event is UnsubscribeConnectivity) {
