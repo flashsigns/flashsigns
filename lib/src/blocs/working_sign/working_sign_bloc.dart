@@ -7,9 +7,9 @@ import 'package:flashsigns/src/blocs/blocs.dart';
 import 'package:flashsigns/src/blocs/preferences/preferences.dart';
 import 'package:flashsigns/src/blocs/working_sign/working_sign_event.dart';
 import 'package:flashsigns/src/blocs/working_sign/working_sign_state.dart';
+import 'package:flashsigns/src/downloader.dart';
 import 'package:flashsigns/src/models/sign.dart';
 import 'package:flashsigns/src/resources/signs_repository.dart';
-import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -114,16 +114,9 @@ class WorkingSignBloc extends Bloc<WorkingSignEvent, WorkingSignState> {
     return await videoFile.exists();
   }
 
-  // TODO should return when the download is finished!
-  // TODO: create an _enqueueVideoDownload(sign)?
   Future<void> _downloadVideo(final Sign sign) async {
-    return FlutterDownloader.enqueue(
-      fileName: _fetchVideoFilename(sign),
-      url: sign.url,
-      savedDir: (await _fetchVideoDir()).path,
-      showNotification: false,
-      openFileFromNotification: false,
-    );
+    final downloader = await Downloader.getInstance();
+    downloader.download(_fetchVideoFilename(sign), sign.url, (await _fetchVideoDir()).path);
   }
 
   Future<VideoPlayerController> _prepareVideoController(final File videoFile) async {

@@ -6,7 +6,6 @@ import 'package:flashsigns/src/resources/signs_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share/share.dart';
@@ -65,7 +64,6 @@ class _PracticeSignScreenState extends State<PracticeSignScreen> {
 
   @override
   void initState() {
-    FlutterDownloader.initialize();
     super.initState();
   }
 
