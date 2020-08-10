@@ -7,8 +7,7 @@ import 'package:flashsigns/src/blocs/blocs.dart';
 class ConnectivityBloc extends Bloc<ConnectivityEvent, ConnectivityState> {
   StreamSubscription _connectivityStream;
 
-  @override
-  ConnectivityState get initialState => ConnectivityUnknown();
+  ConnectivityBloc() : super(ConnectivityUnknown());
 
   @override
   Stream<ConnectivityState> mapEventToState(event) async* {

@@ -27,16 +27,13 @@ class WorkingSignBloc extends Bloc<WorkingSignEvent, WorkingSignState> {
     @required SignsRepository signsRepository,
     @required this.connectivityBloc,
     @required this.preferencesBloc,
-  }) {
+  }) : super(WorkingSignLoading()) {
     _activeSession = ActiveSession(signsRepository: signsRepository);
 
     if (preferencesBloc.state is PreferencesUnknown) {
       preferencesBloc.add(LoadPreferences());
     }
   }
-
-  @override
-  WorkingSignState get initialState => WorkingSignLoading();
 
   @override
   Stream<WorkingSignState> mapEventToState(WorkingSignEvent event) async* {

@@ -5,8 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
   Future<SharedPreferences> _preferences = SharedPreferences.getInstance();
 
-  @override
-  PreferencesState get initialState => PreferencesUnknown();
+  PreferencesBloc() : super(PreferencesUnknown());
 
   @override
   Stream<PreferencesState> mapEventToState(PreferencesEvent event) async* {

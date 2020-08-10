@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:bloc/bloc.dart';
 import 'package:flashsigns/src/blocs/blocs.dart';
 import 'package:flashsigns/src/blocs/preferences/preferences.dart';
 import 'package:flashsigns/src/resources/signs_repository.dart';
@@ -14,7 +13,6 @@ import 'package:share/share.dart';
 import 'package:video_player/video_player.dart';
 
 void main() {
-  BlocSupervisor.delegate = SimpleBlocDelegate();
   runApp(MyApp());
 }
 
@@ -88,7 +86,7 @@ class _PracticeSignScreenState extends State<PracticeSignScreen> {
         title: Text('FlashSigns'),
         actions: <Widget>[
           BlocBuilder<ConnectivityBloc, ConnectivityState>(
-              bloc: _connectivityBloc,
+              cubit: _connectivityBloc,
               builder: (context, state) {
                 final preferencesState = BlocProvider.of<PreferencesBloc>(context).state;
                 final useMobileData = preferencesState is PreferencesChanged && preferencesState.useMobileData;
@@ -229,7 +227,7 @@ class SettingsScreen extends StatelessWidget {
           title: Text("FlashSigns"),
         ),
         body: BlocBuilder<PreferencesBloc, PreferencesState>(
-          bloc: _preferencesBloc,
+          cubit: _preferencesBloc,
           builder: (context, state) {
             if (state is PreferencesChanged) {
               return ListView(
@@ -265,9 +263,7 @@ class SettingsScreen extends StatelessWidget {
         subtitle: Text("Save database on SD card"),
         onTap: () {
           if (Platform.isAndroid) {
-            PermissionHandler().requestPermissions([PermissionGroup.storage]).then((Map<PermissionGroup, PermissionStatus> result) {
-              final storagePermission = result[PermissionGroup.storage];
-
+            Permission.storage.request().then((storagePermission) {
               if (storagePermission == PermissionStatus.granted) {
                 final downloadsPath = "/storage/emulated/0/Download/";
                 SignsRepository.instance.closeDatabase();
@@ -291,8 +287,7 @@ class SettingsScreen extends StatelessWidget {
         subtitle: Text("Replace database with the one from SD card, if existing"),
         onTap: () {
           if (Platform.isAndroid) {
-            PermissionHandler().requestPermissions([PermissionGroup.storage]).then((Map<PermissionGroup, PermissionStatus> result) {
-              final storagePermission = result[PermissionGroup.storage];
+            Permission.storage.request().then((storagePermission) {
 
               if (storagePermission == PermissionStatus.granted) {
                 final downloadsPath = "/storage/emulated/0/Download/";
